@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:View xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark" 
+		creationComplete="init()" xmlns:mx="library://ns.adobe.com/flex/mx" >
+
+	<s:actionContent>
+		<s:Label id="fileNameLb" fontWeight="bold" fontSize="24" width="100%" color="#ffffff" textAlign="center"/>
+		<s:Spacer width="20"/>
+				  
+		<s:Button label="back" click="onBack()"/>
+	</s:actionContent>
+	<fx:Script>
+		<![CDATA[
+			import mx.collections.ArrayCollection;
+			
+			import org.trivadis.CurrentIndex;
+			import org.trivadis.MediaVO;
+			import org.trivadis.PictureEndPoint;
+			import org.trivadis.events.MediaAssetEvent;
+			import org.trivadis.peer2peer.events.ServiceEvent;
+			
+			import xd.parts.MultiDraggable;
+			
+			private static const PREV:String = "prev";
+			private static const NEXT:String = "next";
+
+			private var picture:MediaVO;
+			private var dragme:MultiDraggable;
+			
+			private function init():void {
+				overlayControls = true;
+				
+				PictureEndPoint.getInstance().addEventListener(ServiceEvent.CONNECTED, onConnection, false, 0, true);
+				PictureEndPoint.getInstance().addEventListener(ServiceEvent.DISCONNECTED, onLostConnection, false, 0, true);
+				
+				setPicture();
+			}
+			
+			public function setPicture():void {
+				picture = (data.list as ArrayCollection).getItemAt(CurrentIndex.getInstance().index) as MediaVO;
+				dateLbl.text = picture.date.toLocaleDateString();
+				
+				fileNameLb.text = picture.name;
+				
+				var fs:FileStream = new FileStream();
+				fs.open(new File(picture.path), FileMode.READ);
+				var bytes:ByteArray = new ByteArray();
+				fs.readBytes(bytes);
+				fs.close();
+				
+				var loaderContext:LoaderContext = new LoaderContext();
+				loaderContext.allowCodeImport = false;
+				var loader:Loader = new Loader();
+				loader.loadBytes(bytes, loaderContext);
+				
+				if (dragme)
+					wrapper.removeChild(dragme);
+				dragme = new MultiDraggable(picture.id.toString());
+				dragme.addEventListener(Event.CHANGE, onChange);
+				dragme.addChild(loader);
+				wrapper.addChild(dragme);
+				
+				//dragme.cacheAsBitmap = true;
+				var message:Object = {
+						id: picture.id,
+						type: picture.type,	
+						bytes: bytes
+					};
+				if (PictureEndPoint.getInstance().isReady)
+					PictureEndPoint.getInstance().post(message, MediaAssetEvent.MEDIA);
+			}
+			
+			private function onChange(ev:Event):void {
+				var image:MultiDraggable = ev.currentTarget as MultiDraggable;
+				var message:Object = {
+					id: image.id,
+					matrix: image.transform.matrix
+				};
+				if (PictureEndPoint.getInstance().isReady)
+					PictureEndPoint.getInstance().post(message, MediaAssetEvent.UPDATE);
+			}
+
+			private function onConnection(e:ServiceEvent):void {
+				setPicture();
+			}
+			
+			private function onLostConnection(e:ServiceEvent):void {
+
+			}
+			
+			private function onBack():void {
+				navigator.popView();
+			}
+			
+			private function onMove(increment:int):void {
+				CurrentIndex.getInstance().index += increment;
+				var l:int = (data.list as ArrayCollection).length - 1;
+				if (CurrentIndex.getInstance().index < 0) {
+					CurrentIndex.getInstance().index = 0;
+					return;
+				} else if (CurrentIndex.getInstance().index > l) {
+					CurrentIndex.getInstance().index = l;
+					return;
+				}
+				setPicture();
+			}
+		]]>
+	</fx:Script>
+	<s:Rect height="100%" width="100%">
+		<s:fill>
+			<s:SolidColor/>
+		</s:fill>
+		<s:stroke>
+			<s:SolidColorStroke caps="none" joints="miter" miterLimit="10" weight="1"/>
+		</s:stroke>
+	</s:Rect>
+	
+	<mx:UIComponent id="wrapper" x="0" y="0"/>
+	
+	<s:Label id="dateLbl" bottom="15" horizontalCenter="0"/>
+	<!--controls-->
+	<s:Button label="&lt;" click="onMove(-1)" fontSize="30" height="70" left="10" verticalCenter="0"/>
+	<s:Button label="&gt;" click="onMove(+1)" fontSize="30" height="70" right="10" verticalCenter="0"/>
+</s:View>

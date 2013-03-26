@@ -1,0 +1,27 @@
+/* CSS file */
+@namespace s "library://ns.adobe.com/flex/spark";
+
+
+s|Button
+{
+	chromeColor: #304709;
+}
+
+global
+{
+	backgroundColor: #304709;
+	content-background-color: #17405C;
+	chrome-color: #3d5d06;
+	selection-color: #1E3903;
+}
+s|Label
+{
+	color: #ffffff;
+	backgroundColor: #000000;
+	fontSize: 24;
+	paddingBottom: 5;
+	paddingLeft: 5;
+	paddingRight: 5;
+	paddingTop: 10;
+}
+	

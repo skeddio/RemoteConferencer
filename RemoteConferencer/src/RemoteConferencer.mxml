@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark" 
+			   backgroundColor="#333333"
+			   creationComplete="setInputTouch()"
+			   applicationDPI="160" xmlns:views="views.*">
+	
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	
+	<fx:Script>
+		<![CDATA[
+			import org.trivadis.PictureEndPoint;
+			
+			import views.ListView;
+			
+			private function setInputTouch():void {
+				Multitouch.inputMode = MultitouchInputMode.TOUCH_POINT;
+				PictureEndPoint.getInstance();
+			}
+		]]>
+	</fx:Script>
+	
+	
+	<s:ViewNavigator id="navigator"
+					 firstView="{ListView}" width="100%" height="100%">
+		
+	</s:ViewNavigator>
+	
+	
+</s:Application>

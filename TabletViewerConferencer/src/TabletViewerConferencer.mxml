@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark" 
+			   applicationDPI="160"
+			   backgroundColor="0x000000"
+			   creationComplete="init()" 
+			   applicationComplete="applicationCompleteHandler()" resize="onResize()" xmlns:components="org.trivadis.components.*" 
+			   xmlns:mx="library://ns.adobe.com/flex/mx">
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	
+	<fx:Script>
+		<![CDATA[
+			import org.trivadis.PictureEndPoint;
+			import org.trivadis.events.MediaAssetEvent;
+			import org.trivadis.peer2peer.events.ServiceEvent;
+			
+			private var endPoint:PictureEndPoint;
+			private var imageContainer:Sprite;
+			
+			private function init():void {
+				endPoint = new PictureEndPoint();
+				endPoint.addEventListener(MediaAssetEvent.MEDIA, onMedia);
+				endPoint.addEventListener(MediaAssetEvent.UPDATE, onUpdate);
+				endPoint.addEventListener(ServiceEvent.CONNECTED, onConnection);
+				endPoint.addEventListener(ServiceEvent.DISCONNECTED, onLostConnection);
+				endPoint.addEventListener(ServiceEvent.PEER_CONNECT, onConnection);
+				endPoint.addEventListener(ServiceEvent.PEER_DISCONNECT, onConnection);
+			}
+			
+			private function applicationCompleteHandler():void {
+				loaderInfo.uncaughtErrorEvents.addEventListener(UncaughtErrorEvent.UNCAUGHT_ERROR, uncaughtErrorHandler);
+				endPoint.connect();
+			}
+			
+			private function onMedia(e:MediaAssetEvent):void {
+				if (imageContainer)
+					wrapper.removeChild(imageContainer);
+				imageContainer = new Sprite();
+				var loaderContext:LoaderContext = new LoaderContext();
+				loaderContext.allowCodeImport = false;
+				var loader:Loader = new Loader();
+				loader.contentLoaderInfo.addEventListener(Event.COMPLETE, onPicLoaded,false,0,true);
+				loader.loadBytes(e.media.bytes, loaderContext);
+				imageContainer.addChild(loader);
+				wrapper.addChild(imageContainer);
+			}
+			
+			private function onPicLoaded(e:Event):void {
+				var loader:LoaderInfo = e.target as LoaderInfo;
+				trace("frame width " + frame.width);
+				trace("frame height " + frame.height);
+				trace("content width " + imageContainer.width);
+				trace("content height " + imageContainer.height);
+				//scale the image to fit the screen
+				var sy:Number = 1 / (imageContainer.height / frame.height);
+				loader.content.scaleX = sy;
+				loader.content.scaleY = sy;
+				var smoother_bm:Bitmap = Bitmap(loader.content);
+				smoother_bm.smoothing = true;
+				//center the image
+				centerImage();
+			}
+			
+			private function onUpdate(e:MediaAssetEvent):void {
+				if (imageContainer) {
+					imageContainer.transform.matrix = e.matrix;
+					centerImage();
+				}
+			}
+			
+			private function centerImage():void {
+				if (imageContainer.width < frame.width)
+					imageContainer.x = Math.round( (frame.width - imageContainer.width) / 2);
+				if (imageContainer.height < frame.height)
+					imageContainer.y = Math.round( (frame.height - imageContainer.height) / 2);
+			}
+			
+			private function uncaughtErrorHandler(e:UncaughtErrorEvent):void {
+				trace("UncaughtErrorEvent: " + e.toString());
+			}
+			
+			private function onResize():void {
+				if (!imageContainer)
+					return;
+				var sx:Number = 1 / (imageContainer.width / frame.width);
+				var sy:Number = 1 / (imageContainer.height / frame.height);
+				if (imageContainer.width < imageContainer.height)
+					sx = sy;
+				imageContainer.scaleX = sx;
+				imageContainer.scaleY = sx;
+				//center the image
+				centerImage();
+			}
+			
+			private function onConnection(e:ServiceEvent):void {
+				if (endPoint.neighborCount > 0)
+					connStatus.connected = true;
+				else
+					connStatus.connected = false;
+			}
+			
+			private function onLostConnection(e:ServiceEvent):void {
+				connStatus.connected = false;
+			}
+		]]>
+	</fx:Script>
+	
+	<s:Group id="frame" top="0" bottom="0" left="0" right="0">
+		
+		<mx:UIComponent id="wrapper" left="0" bottom="0" top="0" right="0" verticalCenter="0" horizontalCenter="0"/>
+		
+		<s:Image id="imageId" left="0" bottom="0" top="0" right="0" verticalCenter="0" horizontalCenter="0"/>
+		
+	</s:Group>
+	<components:ConnectedComponent id="connStatus" top="0" right="5"/>
+	
+</s:Application>

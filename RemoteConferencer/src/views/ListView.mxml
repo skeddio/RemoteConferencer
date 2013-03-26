@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:View xmlns:fx="http://ns.adobe.com/mxml/2009"
+		xmlns:s="library://ns.adobe.com/flex/spark"
+		 
+		
+		creationComplete="refreshList()"
+		viewActivate="onActivate()">
+
+	<s:actionContent>
+		
+		<s:Button label="refresh" click="refreshList()"/>
+		
+	</s:actionContent>
+	
+<fx:Script>
+	<![CDATA[
+		import mx.collections.ArrayCollection;
+		import mx.collections.SortField;
+		
+		import spark.collections.Sort;
+		import spark.events.IndexChangeEvent;
+		
+		import org.trivadis.CurrentIndex;
+		import org.trivadis.MediaManager;
+		import org.trivadis.MediaVO;
+		
+		private function onActivate():void {
+			if (data && CurrentIndex.getInstance().index) {
+				list.selectedIndex = CurrentIndex.getInstance().index;
+				var delta:Point = list.layout.getScrollPositionDeltaToElement(CurrentIndex.getInstance().index);
+				if (delta && delta.y != 0) {
+					list.layout.verticalScrollPosition += delta.y;
+				}
+			}
+		}
+
+		private function onChange(e:IndexChangeEvent):void {
+			//CurrentIndex.getInstance().index = list.selectedIndex;
+			CurrentIndex.getInstance().index = list.selectedIndex;
+			data = {list: list.dataProvider};
+			navigator.pushView(MediaView, data);
+			
+		}
+		
+		//read the pictures
+		private function refreshList():void {
+//			var p:File = new File("/Users/mcorlan/Pictures/Nicolas")
+			data = {list: MediaManager.getInstance().readMedia()};
+			
+			var _array:ArrayCollection = new ArrayCollection();
+			_array = data.list;
+			
+			var srt:Sort = new Sort();
+			srt.fields = [new SortField("name")];
+			_array.sort = srt;
+			_array.refresh();
+			
+			list.dataProvider = _array;
+			
+		}
+		
+		private function formatLbl(item:Object):String {
+			//return (item as MediaVO).date.toDateString();
+			return (item as MediaVO).name;
+		}
+
+	]]>
+</fx:Script>	
+	
+	<s:List id="list" width="100%" height="100%" change="onChange(event)" chromeColor="#507215"
+			labelFunction="formatLbl">
+		
+		
+		
+<!--		<s:itemRenderer>
+			<fx:Component>
+				<s:MobileIconItemRenderer iconFunction="getIcon">
+					<fx:Script>
+						<![CDATA[
+							import org.corlan.MediaVO;
+							
+							[Embed(source="../assets/iconp.png")]
+							private var iconP:Class;
+							
+							[Embed(source="../assets/iconm.png")]
+							private var iconM:Class;
+							
+							protected function getIcon(item:Object):Object {
+								if (!item || (item as MediaVO).type == MediaVO.PIC)
+									return iconP;
+								return iconM;
+							}
+						]]>
+					</fx:Script>
+				</s:MobileIconItemRenderer>
+			</fx:Component>
+		</s:itemRenderer>-->
+	</s:List>
+		
+</s:View>
