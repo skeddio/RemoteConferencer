@@ -3,7 +3,9 @@
 					   xmlns:s="library://ns.adobe.com/flex/spark" 
 					   xmlns:mx="library://ns.adobe.com/flex/mx"
 					   showStatusBar="false"  backgroundColor="0x000000" 
-					   creationComplete="init()" applicationComplete="applicationCompleteHandler()" resize="onResize()" xmlns:components="org.trivadis.components.*">
+					   creationComplete="init()" 
+					   applicationComplete="applicationCompleteHandler()" 
+					   resize="onResize()" xmlns:components="org.trivadis.components.*">
 	<fx:Declarations>
 		<!-- Place non-visual elements (e.g., services, value objects) here -->
 	</fx:Declarations>
@@ -115,9 +117,9 @@
 	</fx:Script>
 	
 	<s:Group id="frame" top="0" bottom="0" left="0" right="0">
-		<mx:UIComponent id="wrapper" left="0" bottom="0" top="0" right="0" verticalCenter="0" horizontalCenter="0"/>
-			
+		<mx:UIComponent id="wrapper" left="0" bottom="0" top="0" right="0" verticalCenter="0" horizontalCenter="0"/>			
 	</s:Group>
+	
 	<components:ConnectedComponent id="connStatus" top="0" right="5"/>
 	
 	

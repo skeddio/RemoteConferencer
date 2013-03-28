@@ -1,11 +1,7 @@
 package org.trivadis {
-	import flash.events.EventDispatcher;
-	import flash.events.IEventDispatcher;
 	import flash.filesystem.File;
 	
 	import mx.collections.ArrayCollection;
-	
-	import org.trivadis.*;
 	
 	public class MediaManager {
 		
@@ -23,11 +19,15 @@ package org.trivadis {
 		
 		public function readMedia(path:File=null):ArrayCollection {
 			var folder:File;
-			if (!path)
+			if (!path){
+				//use the Camera folder where is stored the photo shot by your camera (Android device)
 				folder = new File(File.documentsDirectory.nativePath + "/DCIM/Camera/");
-			else
+			}
+			else{
 				folder = path;
+			}
 			trace("<<<folder.nativePath>>> " + folder.nativePath);
+			
 			var arr:Array = folder.getDirectoryListing();
 			var media:MediaVO;
 			var ret:ArrayCollection = new ArrayCollection();
